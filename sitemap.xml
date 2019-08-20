@@ -3,15 +3,47 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://lyx190.github.io/about/</loc>
+    <lastmod>2019-08-19T18:37:46+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://lyx190.github.io/categories/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://lyx190.github.io/tags/reid/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://lyx190.github.io/categories/reid/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://lyx190.github.io/reid/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>https://lyx190.github.io/tags/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>https://lyx190.github.io/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://lyx190.github.io/reid/randomidentificationsampler/</loc>
+    <lastmod>2019-08-19T17:05:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://lyx190.github.io/series/</loc>
   </url>
   
 </urlset>
