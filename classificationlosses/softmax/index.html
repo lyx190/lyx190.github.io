@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1">
+
+  
+    
+    
+      <link href="/css/fonts.css" rel="stylesheet" type="text/css">
+    
+  
+
+  
+  <title>关于人脸识别中的几种Softmax变种</title>
+
+  
+  
+  <link rel="stylesheet" href="/css/hugo-octopress.css">
+
+  
+  
+
+  
+    <link rel="stylesheet" href="/css/fork-awesome.min.css">
+  
+
+  
+  <link href="https://lyx190.github.io/favicon.png" rel="icon">
+
+  
+  
+
+  <meta name="description" content="" />
+  <meta name="keywords" content="">
+  <meta name="author" content="Yuxiang Lin">
+
+  
+  <meta name="generator" content="Hugo 0.57.0" />
+
+  
+  
+
+  
+  
+</head>
+<body>
+
+
+<header role="banner">
+<hgroup>
+  
+  <h1><a href="https://lyx190.github.io/">Yuxiang Lin</a></h1>
+    <h2>More Efforts, More Fortunes.</h2>
+</hgroup></header>
+
+
+<nav role="navigation">
+<fieldset class="mobile-nav">
+  
+  <select onchange="location = this.value;">
+    <option value="">Navigate…</option>
+      
+        <option value="https://lyx190.github.io/tags">» Tags</option>
+      
+        <option value="https://lyx190.github.io/categories">» Categories</option>
+      
+        <option value="https://lyx190.github.io/">» Home</option>
+      
+        <option value="https://lyx190.github.io/about/">» Contact Me</option>
+      
+  </select>
+</fieldset>
+
+
+<ul class="main-navigation">
+  
+  
+    
+      <li><a href="https://lyx190.github.io/tags" title="Tags" >Tags</a></li>
+    
+  
+    
+      <li><a href="https://lyx190.github.io/categories" title="Categories" >Categories</a></li>
+    
+  
+    
+      <li><a href="https://lyx190.github.io/" title="Home">Home</a></li>
+    
+  
+    
+      <li><a href="https://lyx190.github.io/about/" title="Contact Me" >Contact Me</a></li>
+    
+  
+</ul>
+
+<ul class="subscription">
+  
+</ul>
+
+
+  <form action="https://www.google.com/search" method="get" target="_blank">
+    <fieldset role="search">
+      <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+      <input type="hidden" name="q" value="site:https://lyx190.github.io/" />
+    </fieldset>
+  </form>
+
+</nav>
+
+
+<div id="main">
+  <div id="content">
+    <div>
+      <article class="hentry" role="article">
+
+        
+        
+
+<header>
+  <p class="meta">Sep 1, 2019
+     - 2 minute read 
+    
+
+    
+    
+      - <a class="label" href="https://lyx190.github.io/categories/loss/">Loss </a>
+    
+  </p>
+  <h1 class="entry-title">
+     关于人脸识别中的几种Softmax变种 
+  </h1>
+</header>
+
+
+        <div class="entry-content">
+          
+          
+          
+          
+
+<h2 id="sphereface-cosface-arcface">SphereFace, CosFace, ArcFace</h2>
+
+<hr />
+
+<h4 id="①-为何要归一化">① 为何要归一化？</h4>
+
+<p>在分类的时候，softmax loss 计算如下：
+<center>
+<img src="https://ws1.sinaimg.cn/mw690/a94403f0ly1g6kft7vplhj20i1035mx7.jpg" alt="Selection_002" />
+</center>
+<center>
+<img src="https://wx2.sinaimg.cn/mw690/a94403f0ly1g6kfx74uetj20c4020wed.jpg" alt="Selection_003" />
+</center></p>
+
+<p>由公式可以看出，在特征空间中 FC 层上的 weights 可以作为某个类别的代表，从而优化使得特征 $x$ 与之的矢量积变小。因此，在优化 softmax loss 的时候就会增大 $f_i$ ，此时有三个趋势：
+        1. 增大正确类别的 weight norm $||W_j||$。这样的效果是样本多且容易区分类别的 weight norm 变大，反之则会变小。我的理解是样本少的类别在有限的特征空间中收到了挤压。
+        2. 增大样本的 feature norm $||X_i||$。效果是简单样本的 norm 变大，困难样本的 norm 变小。
+        3. 缩小 feature 与 weight 之间的夹角。</p>
+
+<ul>
+<li><p><strong>Feature Normalization</strong>
+<center>
+<img src="https://ws2.sinaimg.cn/mw690/a94403f0ly1g6kgfjmqthj20ec0b70vz.jpg" alt="Selection_006" />
+</center></p>
+
+<p>如图所示，$f_1$,$f_2$与$f_3$代表3个样本，可以看出 $f_1$与$f_2$属于困难样本，它们的 norm 都较小，此时 $f_2$会被分到与 $f_2$相同的类别中，但显然它是属于跟 $f_3$一类的。</p></li>
+
+<li><p><strong>Weight Normalization</strong>
+<center>
+<img src="https://wx4.sinaimg.cn/mw690/a94403f0ly1g6kg255pvqj20500250sj.jpg" alt="Selection_005" />
+</center></p>
+
+<p>数据不均衡：数据集中不同的ID的数据数量上不一致，导致了样本数多的类别相对的特征 norm 就会比较大，而其他样本数少的类别就会比较小。在特征空间中它们理应是同等的才是，为了让它们均等瓜分特征空间，需要对权重进行归一化，排除模长不一致导致的分类错误。</p></li>
+</ul>
+
+<p>从以上的分析可以看出，我们需要让网络往缩小 feature 与 weight 之间的夹角的角度去优化才是最合理的，所以这种情况下就需要对 feature 与 weight 进行归一化，排除它们的影响。然后同时加上两个 normalization 的话，网络会非常难训练，在 NormFace 中指出在 weight 和 feature 都归一化到 1 之后，在类别数较多时，即使是正确的样本，都将获得与分错的样本在数值上差不多大小的梯度，自然地影响了网络去关注那些更需要学习的样本。因此会引入一个 scale 参数，也可以理解为通过这个参数扩大了分类超球面的体积，让决策分类更加分离。</p>
+
+<h4 id="②-center-loss-eccv-2016-https-ydwen-github-io-papers-weneccv16-pdf">② <a href="https://ydwen.github.io/papers/WenECCV16.pdf">Center Loss(ECCV 2016)</a></h4>
+
+<p><center>
+<img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6lkghc5gwj20pz0bkn33.jpg" alt="Selection_010" />
+</center>
+文章给出了没有归一化的 Softmax Loss 在二维平面上的表现。其 Motivation 是觉得 Softmax Loss 仅仅是学习了一个决策面将不同类别的样本分开，但是类内却不紧凑，使得学到的 feature 不够 discriminative。因此就有了如下的 loss:
+<center>
+<img src="https://wx2.sinaimg.cn/large/a94403f0ly1g6lklh0sorj20g8041dfy.jpg" alt="Selection_011" />
+</center>
+我的理解是像聚类一样学习样本的中心点，然后将它们都聚集起来，以此来减小类内差距。但是由于数据集样本量大的原因，不可能全部计算，因此在每个 iteration 更新的时候计算以此 batch 的各个类中心，并进行一次优化。而损失函数中的 λ 则是一个固定值，不同的 λ 会让样本有不同的 discriminative power。如下图：
+<center>
+<img src="https://ws4.sinaimg.cn/large/a94403f0ly1g6lkxiduxtj20oh0ijdmt.jpg" alt="Selection_012" />
+</center>
+λ 的值越大，分离能力越强。我的理解是 Softmax 分开各个类别的样本，加上 Center Loss 来优化类内的样本距离。</p>
+
+<h4 id="③-l-softmax-icml-2016-https-arxiv-org-abs-1612-02295">③ <a href="https://arxiv.org/abs/1612.02295">L-Softmax(ICML 2016)</a></h4>
+
+<p>softmax loss 分类的时候要求是属于类别 1 的 feature: $W_1x&gt;W_2x$ 即 $||W_1||||x||cos(\theta_1)&gt;||W_2||||x||cos(\theta_2)$，这样决策空间在 2D 中为一条线，下面会给出图片，导致容易错分。所以需要引入 margin 来约束类间的距离。所以 L-Softmax 提出了：
+$$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\theta_2)$$
+其中 $0\leq\theta_1\leq\frac{\pi}{m}$，于是就有了 L-Softmax的公式：
+<center>
+<img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6khcjp3tnj20dh06r3ys.jpg" alt="Screenshot" />
+</center>
+为了方便反向传播且将 cosine 的值限制在单调的区间内：
+<center>
+<img src="https://wx2.sinaimg.cn/large/a94403f0ly1g6khfngmduj20in02m3yj.jpg" alt="lsoft" />
+</center></p>
+
+<h4 id="④-sphereface-cvpr-2017-https-arxiv-org-abs-1704-08063">④ <a href="https://arxiv.org/abs/1704.08063">SphereFace(CVPR 2017)</a></h4>
+
+<p>SpereFace 与 L-Softmax 最大的区别在于它将 weight 归一化了。文章介绍了 open-set 和 close-set face recognition 的区别：
+<center>
+<img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6khlrpsl5j20iu0lkn3p.jpg" alt="Selection_007" />
+</center>
+并提出了 A-Softmax：
+<center>
+<img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6khnprsngj20e102ot8q.jpg" alt="asoft" />
+</center>
+它的决策空间与 softmax 的对比如下，其中 Modified Softmax 表示将 weight normalization 之后的 Softmax loss：
+<center>
+<img src="https://wx2.sinaimg.cn/large/a94403f0ly1g6khpoa2usj20l707ajsj.jpg" alt="Selection_008" />
+</center>
+并且通过实验得出 margin 越大会有更好的效果：
+<center>
+<img src="https://ws3.sinaimg.cn/large/a94403f0ly1g6khr6le3oj213t0hr4a7.jpg" alt="Selection_009" />
+</center></p>
+
+<h4 id="⑤-cosface-cvpr-2018-https-arxiv-org-abs-1801-09414">⑤ <a href="https://arxiv.org/abs/1801.09414">CosFace(CVPR 2018)</a></h4>
+
+<p>A-Softmax引入的是乘性 margin，这导致网络的训练变得很苦难。需要组合退货策略等繁琐的训练技巧。导致这种 margin 的方式不使用。其带来的麻烦是：</p>
+
+<ol>
+<li><p>乘性 margin 把 cos 函数的单调区间压小了，导致优化困难。在 [0, $\pi$]这个区间内 cosine 函数都是单调的，只要落在这个区间内的任何一个位置，网络都会往减小的方向去优化。但加上乘性 margin 之后单调区间被压缩到了 [0, $\frac{\pi}{m}$]，如果有某个样本落在这个区间外了，就很难进行优化；</p></li>
+
+<li><p>乘性 margin 产生的 margin 是不均匀的，依赖于夹角，如果两个样本的夹角本来就小，那它产生的 margin 也会很小。换言之，乘性 margin 对于易混淆的 class 具有不可分性。</p></li>
+</ol>
+
+<p>所以，为了解决这个问题，CosFace 将乘性的 margin 改成了加性 margin。而且在训练的时候也运用了 scale 来扩大特征空间：
+<center>
+<img src="https://ws2.sinaimg.cn/large/a94403f0ly1g6llluh7ixj20dc03iwek.jpg" alt="Selection_013" />
+</center></p>
+
+<p>在 CosFace 中作者要求决策平面为 $cos(\theta_1)-m&gt;cos(\theta_2)$ 与 $cos(\theta_2)-m&gt;cos(\theta_1)$，因此就有了下面的这张对比图与公式：
+<center>
+<img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6llt511grj20ls06bwf1.jpg" alt="Selection_014" />
+</center>
+<center>
+<img src="https://ws2.sinaimg.cn/large/a94403f0ly1g6llu39euvj20kr02wq34.jpg" alt="Selection_015" />
+</center>
+从几何角度上也可以看出它与 Normalized Softmax Loss 的区别：
+<center>
+<img src="https://ws4.sinaimg.cn/large/a94403f0ly1g6llzlgd4nj20hn07ddgt.jpg" alt="Selection_016" />
+</center></p>
+
+<p>图中左边的决策边界是 $cos(\theta_1)-cos(\theta_2)=0$ 而右边的决策边界是 $cos(\theta_1)-cos(\theta_2)=m$。<strong>图右中，若 $x$ 越接近 $W_1$，$cos(\theta_1)$ 的值会越大，反之 $cos(\theta_2)$ 的值会越小，所以它们的差值大于 $m$，意味着它越属于 1 类。而当 $x$ 属于 1 类，且落在中间空白区域的时候，它对应的 loss 值会越大，反传的梯度也大，所以从网络更新的角度来理解也是有道理的。</strong></p>
+
+<p><strong>$cos(m\theta)$ 与 $cos(\theta)-m$ 这两个的区别实质上是角度距离与余弦距离的区别，最终的决策边界是与余弦相关的，所以用加性 margin 会比有乘性更有效果。</strong>
+另外，CosFace 的论文中还指出，由于 scale 的大小过小会导致不收敛，所以给出了 lower bound of scale：
+<center>
+<img src="https://wx2.sinaimg.cn/large/a94403f0ly1g6lmcafpt5j20az034748.jpg" alt="Selection_017" />
+</center></p>
+
+<p>其中 $C$ 与 $P_W$ 分别是类别数与最小的期望概率值，在训练中都是固定值。</p>
+
+<h4 id="⑥-arcface-cvpr-2019-https-arxiv-org-abs-1801-07698">⑥ <a href="https://arxiv.org/abs/1801.07698">ArcFace(CVPR 2019)</a></h4>
+
+<p>损失函数如下：
+<center>
+<img src="https://wx4.sinaimg.cn/large/a94403f0ly1g6lmw7kpm1j20jg036aa9.jpg" alt="Selection_018" />
+</center></p>
+
+<p>把 margin 放到了 cosine 函数里面，更加关注角度，对比图如下：
+<center>
+<img src="https://ws3.sinaimg.cn/large/a94403f0ly1g6ln0p3i1vj20l1061wfa.jpg" alt="Selection_019" />
+</center></p>
+
+<p>该损失函数的决策边界为：$$s(cos(\theta_1+m)-cos\theta_2)=0$$</p>
+
+<p>最后,几种函数的决策边界表：
+<center>
+<img src="https://ws2.sinaimg.cn/large/a94403f0ly1g6ln858nztj20u00ar3zi.jpg" alt="biaoge" />
+</center></p>
+
+        </div>
+        
+
+<footer>
+  <p class="meta">
+    <span class="byline author vcard">Posted by <span class="fn">Yuxiang Lin</span></span>
+    
+    <time>Sep 1, 2019</time>
+    
+      <span class="categories">
+        Tags:
+        
+          <a class="category" href="https://lyx190.github.io/tags/loss">Loss</a>  
+    
+    </span>
+  </p>
+
+  
+
+  <p class="meta">
+    
+
+    
+  </p>
+  
+</footer>
+
+      </article>
+    </div>
+    
+
+<aside class="sidebar thirds">
+  <section class="first odd">
+
+    
+      <h1>Who Am I?</h1>
+    
+
+    <p>
+      
+        <p>Welcome to my Blog! My name is Yuxiang Lin, from China.😎
+  </br></p>
+
+<p>I am a Master student from Karlsruhe Institut for Technology, majoring in Mechatronics and Information Technology. I am recording my learning process here.</p>
+
+<p>Enjoy!</p>
+
+      
+    </p>
+  </section>
+
+
+
+  
+  <ul class="sidebar-nav">
+    <li class="sidebar-nav-item">
+      
+      
+      
+      
+      
+         
+      
+      
+      
+      
+      
+      
+      
+      
+
+    
+    
+    </li>
+  </ul>
+
+  
+
+  
+    
+      <section class="odd">
+        
+          <h1>Navigation</h1>
+        
+        
+          <li>
+            <a href="https://lyx190.github.io/categories" title="Categories" >Categories</a>
+          </li>
+        
+          <li>
+            <a href="https://lyx190.github.io/tags" title="Tags" >Tags</a>
+          </li>
+        
+      </section>
+    
+  
+
+  
+  
+  
+    
+      <section class="even">
+        <h1>Recent Posts</h1>
+        <ul id="recent_posts">
+          
+          
+        </ul>
+      </section>
+    
+  
+</aside>
+
+  </div>
+</div>
+
+    <footer role="contentinfo">
+      <p>Copyright &copy; 2019 Yuxiang Lin - <a href="https://lyx190.github.io/license/">License</a> -
+        <span class="credit">Powered by <a target="_blank" href="https://gohugo.io">Hugo</a> and <a target="_blank" href="https://github.com/parsiya/hugo-octopress/">Hugo-Octopress</a> theme.
+      </p>
+    </footer>
+
+    
+    
+    
+
+    
+  </body>
+</html>
+

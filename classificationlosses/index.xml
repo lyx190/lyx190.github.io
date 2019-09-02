@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Yuxiang Lin</title>
-    <link>https://lyx190.github.io/</link>
-    <description>Recent content on Yuxiang Lin</description>
+    <title>ClassificationLosses on Yuxiang Lin</title>
+    <link>https://lyx190.github.io/classificationlosses/</link>
+    <description>Recent content in ClassificationLosses on Yuxiang Lin</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 01 Sep 2019 23:09:14 +0800</lastBuildDate>
     
-	<atom:link href="https://lyx190.github.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://lyx190.github.io/classificationlosses/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -24,18 +24,6 @@
  Weight Normalization  
 数据不均衡：数据集中不同的ID的数据数量上不一致，导致了样本数多的类别相对的特征 norm 就会比较大，而其他样本数少的类别就会比较小。在特征空间中它们理应是同等的才是，为了让它们均等瓜分特征空间，需要对权重进行归一化，排除模长不一致导致的分类错误。
   从以上的分析可以看出，我们需要让网络往缩小 feature 与 weight 之间的夹角的角度去优化才是最合理的，所以这种情况下就需要对 feature 与 weight 进行归一化，排除它们的影响。然后同时加上两个 normalization 的话，网络会非常难训练，在 NormFace 中指出在 weight 和 feature 都归一化到 1 之后，在类别数较多时，即使是正确的样本，都将获得与分错的样本在数值上差不多大小的梯度，自然地影响了网络去关注那些更需要学习的样本。因此会引入一个 scale 参数，也可以理解为通过这个参数扩大了分类超球面的体积，让决策分类更加分离。</description>
-    </item>
-    
-    <item>
-      <title>关于ReID中的identification loss训练采样策略思考</title>
-      <link>https://lyx190.github.io/reid/randomidentificationsampler/</link>
-      <pubDate>Mon, 19 Aug 2019 17:05:00 +0800</pubDate>
-      
-      <guid>https://lyx190.github.io/reid/randomidentificationsampler/</guid>
-      <description>关于ReID中的Identification Loss训练采样策略思考 在ReID的任务中，由于 triplet loss 需要的采样策略是每个 ID 要有固定的样本数量，比如 4 或者 8，这样就意味着假如 batch_size 为 64，num_instance 为4，则此时的 minibatch 中就有 16 个 ID 的样本，每个 ID 包含 4 个样本数。训练集中如果有的ID对应的样本数达不到 4 的话，则重复采样或者放弃该 ID 。这就会导致数据集中并不是所有的样本都被利用到训练中，例如在 Market-1501 中 traning dataset 有 751 个 ID ，12936 张图片。如上的设置，则训练的时候每个 epoch 只有 735 个 ID ,即 2944 张图片被用到。
-而如果用 softmax 训练样本的话，需要的采样策略是尽量多的ID的图片，每个 epoch 会用到所有的图片进行训练。
-在最近的实验中，Market-1501 上运用纯 softmax 训练 PCB 网络，分别用两个采样策略得到的效果差很大，Rank-1 分别为 92.2% 与 90.0%。
-这样的话在 softmax 与 triplet loss 联合训练的时候就很有可能出现两种 loss 都互相受制于各自的采样策略从而训练不好的问题。在论文 Pyramidal Person Re-Identification via Multi-Loss Dynamic Training 中就提到了这一问题，论文的解决办法是先用滑动平均的方法计算两个 loss 的下降程度，据此在训练的时候在线调整 sampling 的策略。</description>
     </item>
     
   </channel>
