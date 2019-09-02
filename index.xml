@@ -17,10 +17,13 @@
       <pubDate>Sun, 01 Sep 2019 23:09:14 +0800</pubDate>
       
       <guid>https://lyx190.github.io/classificationlosses/softmax/</guid>
-      <description>SphereFace, CosFace, ArcFace ① 为何要归一化？ 在分类的时候，softmax loss 计算如下：    
-由公式可以看出，在特征空间中 FC 层上的 weights 可以作为某个类别的代表，从而优化使得特征 $x$ 与之的矢量积变小。因此，在优化 softmax loss 的时候就会增大 $f_i$ ，此时有三个趋势： 1. 增大正确类别的 weight norm $||W_j||$。这样的效果是样本多且容易区分类别的 weight norm 变大，反之则会变小。我的理解是样本少的类别在有限的特征空间中收到了挤压。 2. 增大样本的 feature norm $||X_i||$。效果是简单样本的 norm 变大，困难样本的 norm 变小。 3. 缩小 feature 与 weight 之间的夹角。
- Feature Normalization  
-如图所示，$f_1$,$f_2$与$f_3$代表3个样本，可以看出 $f_1$与$f_2$属于困难样本，它们的 norm 都较小，此时 $f_2$会被分到与 $f_2$相同的类别中，但显然它是属于跟 $f_3$一类的。
+      <description>SphereFace, CosFace, ArcFace  ① 为何要归一化？ 在分类的时候，softmax loss 计算如下：    
+由公式可以看出，在特征空间中 FC 层上的 weights 可以作为某个类别的代表，从而优化使得特征 x 与之的矢量积变小。因此，在优化 softmax loss 的时候就会增大 fi ，此时有三个趋势：
+ 增大正确类别的 weight norm。这样的效果是样本多且容易区分类别的 weight norm 变大，反之则会变小。我的理解是样本少的类别在有限的特征空间中收到了挤压。
+ 增大样本的 feature norm。效果是简单样本的 norm 变大，困难样本的 norm 变小。
+ 缩小 feature 与 weight 之间的夹角。
+   Feature Normalization  
+如图所示,f1,f2与f3代表3个样本，可以看出f1与f2属于困难样本，它们的 norm 都较小，此时f2会被分到与f2相同的类别中，但显然它是属于跟f3一类的。
  Weight Normalization  
 数据不均衡：数据集中不同的ID的数据数量上不一致，导致了样本数多的类别相对的特征 norm 就会比较大，而其他样本数少的类别就会比较小。在特征空间中它们理应是同等的才是，为了让它们均等瓜分特征空间，需要对权重进行归一化，排除模长不一致导致的分类错误。
   从以上的分析可以看出，我们需要让网络往缩小 feature 与 weight 之间的夹角的角度去优化才是最合理的，所以这种情况下就需要对 feature 与 weight 进行归一化，排除它们的影响。然后同时加上两个 normalization 的话，网络会非常难训练，在 NormFace 中指出在 weight 和 feature 都归一化到 1 之后，在类别数较多时，即使是正确的样本，都将获得与分错的样本在数值上差不多大小的梯度，自然地影响了网络去关注那些更需要学习的样本。因此会引入一个 scale 参数，也可以理解为通过这个参数扩大了分类超球面的体积，让决策分类更加分离。</description>

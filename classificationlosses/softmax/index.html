@@ -145,7 +145,7 @@
 
 <hr />
 
-<h4 id="①-为何要归一化">① 为何要归一化？</h4>
+<h4 id="big-①-为何要归一化-big"><big> ① 为何要归一化？</big></h4>
 
 <p>在分类的时候，softmax loss 计算如下：
 <center>
@@ -155,10 +155,15 @@
 <img src="https://wx2.sinaimg.cn/mw690/a94403f0ly1g6kfx74uetj20c4020wed.jpg" alt="Selection_003" />
 </center></p>
 
-<p>由公式可以看出，在特征空间中 FC 层上的 weights 可以作为某个类别的代表，从而优化使得特征 $x$ 与之的矢量积变小。因此，在优化 softmax loss 的时候就会增大 $f_i$ ，此时有三个趋势：
-        1. 增大正确类别的 weight norm $||W_j||$。这样的效果是样本多且容易区分类别的 weight norm 变大，反之则会变小。我的理解是样本少的类别在有限的特征空间中收到了挤压。
-        2. 增大样本的 feature norm $||X_i||$。效果是简单样本的 norm 变大，困难样本的 norm 变小。
-        3. 缩小 feature 与 weight 之间的夹角。</p>
+<p>由公式可以看出，在特征空间中 FC 层上的 weights 可以作为某个类别的代表，从而优化使得特征 <strong>x</strong> 与之的矢量积变小。因此，在优化 softmax loss 的时候就会增大 <strong>fi</strong> ，此时有三个趋势：</p>
+
+<ol>
+<li><p>增大正确类别的 weight norm。这样的效果是样本多且容易区分类别的 weight norm 变大，反之则会变小。我的理解是样本少的类别在有限的特征空间中收到了挤压。</p></li>
+
+<li><p>增大样本的 feature norm。效果是简单样本的 norm 变大，困难样本的 norm 变小。</p></li>
+
+<li><p>缩小 feature 与 weight 之间的夹角。</p></li>
+</ol>
 
 <ul>
 <li><p><strong>Feature Normalization</strong>
@@ -166,7 +171,7 @@
 <img src="https://ws2.sinaimg.cn/mw690/a94403f0ly1g6kgfjmqthj20ec0b70vz.jpg" alt="Selection_006" />
 </center></p>
 
-<p>如图所示，$f_1$,$f_2$与$f_3$代表3个样本，可以看出 $f_1$与$f_2$属于困难样本，它们的 norm 都较小，此时 $f_2$会被分到与 $f_2$相同的类别中，但显然它是属于跟 $f_3$一类的。</p></li>
+<p>如图所示,<strong>f1</strong>,<strong>f2</strong>与<strong>f3</strong>代表3个样本，可以看出<strong>f1</strong>与<strong>f2</strong>属于困难样本，它们的 norm 都较小，此时<strong>f2</strong>会被分到与<strong>f2</strong>相同的类别中，但显然它是属于跟<strong>f3</strong>一类的。</p></li>
 
 <li><p><strong>Weight Normalization</strong>
 <center>
@@ -178,7 +183,7 @@
 
 <p>从以上的分析可以看出，我们需要让网络往缩小 feature 与 weight 之间的夹角的角度去优化才是最合理的，所以这种情况下就需要对 feature 与 weight 进行归一化，排除它们的影响。然后同时加上两个 normalization 的话，网络会非常难训练，在 NormFace 中指出在 weight 和 feature 都归一化到 1 之后，在类别数较多时，即使是正确的样本，都将获得与分错的样本在数值上差不多大小的梯度，自然地影响了网络去关注那些更需要学习的样本。因此会引入一个 scale 参数，也可以理解为通过这个参数扩大了分类超球面的体积，让决策分类更加分离。</p>
 
-<h4 id="②-center-loss-eccv-2016-https-ydwen-github-io-papers-weneccv16-pdf">② <a href="https://ydwen.github.io/papers/WenECCV16.pdf">Center Loss(ECCV 2016)</a></h4>
+<h4 id="big-②-center-loss-eccv-2016-https-ydwen-github-io-papers-weneccv16-pdf-big"><big> ② <a href="https://ydwen.github.io/papers/WenECCV16.pdf">Center Loss(ECCV 2016)</a></big></h4>
 
 <p><center>
 <img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6lkghc5gwj20pz0bkn33.jpg" alt="Selection_010" />
@@ -193,11 +198,11 @@
 </center>
 λ 的值越大，分离能力越强。我的理解是 Softmax 分开各个类别的样本，加上 Center Loss 来优化类内的样本距离。</p>
 
-<h4 id="③-l-softmax-icml-2016-https-arxiv-org-abs-1612-02295">③ <a href="https://arxiv.org/abs/1612.02295">L-Softmax(ICML 2016)</a></h4>
+<h4 id="big-③-l-softmax-icml-2016-https-arxiv-org-abs-1612-02295-big"><big>③ <a href="https://arxiv.org/abs/1612.02295">L-Softmax(ICML 2016)</a> </big></h4>
 
-<p>softmax loss 分类的时候要求是属于类别 1 的 feature: $W_1x&gt;W_2x$ 即 $||W_1||||x||cos(\theta_1)&gt;||W_2||||x||cos(\theta_2)$，这样决策空间在 2D 中为一条线，下面会给出图片，导致容易错分。所以需要引入 margin 来约束类间的距离。所以 L-Softmax 提出了：
+<p>softmax loss 分类的时候要求是属于类别 1 的 feature: $$W_1x&gt;W_2x$$ 即 $$||W_1||||x||cos(\theta_1)&gt;||W_2||||x||cos(\theta_2)$$，这样决策空间在 2D 中为一条线，下面会给出图片，导致容易错分。所以需要引入 margin 来约束类间的距离。所以 L-Softmax 提出了：
 $$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\theta_2)$$
-其中 $0\leq\theta_1\leq\frac{\pi}{m}$，于是就有了 L-Softmax的公式：
+其中 $$0\leq\theta_1\leq\frac{\pi}{m}$$，于是就有了 L-Softmax的公式：
 <center>
 <img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6khcjp3tnj20dh06r3ys.jpg" alt="Screenshot" />
 </center>
@@ -225,12 +230,12 @@ $$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\th
 <img src="https://ws3.sinaimg.cn/large/a94403f0ly1g6khr6le3oj213t0hr4a7.jpg" alt="Selection_009" />
 </center></p>
 
-<h4 id="⑤-cosface-cvpr-2018-https-arxiv-org-abs-1801-09414">⑤ <a href="https://arxiv.org/abs/1801.09414">CosFace(CVPR 2018)</a></h4>
+<h4 id="big-⑤-cosface-cvpr-2018-https-arxiv-org-abs-1801-09414-big"><big>⑤ <a href="https://arxiv.org/abs/1801.09414">CosFace(CVPR 2018)</a></big></h4>
 
 <p>A-Softmax引入的是乘性 margin，这导致网络的训练变得很苦难。需要组合退货策略等繁琐的训练技巧。导致这种 margin 的方式不使用。其带来的麻烦是：</p>
 
 <ol>
-<li><p>乘性 margin 把 cos 函数的单调区间压小了，导致优化困难。在 [0, $\pi$]这个区间内 cosine 函数都是单调的，只要落在这个区间内的任何一个位置，网络都会往减小的方向去优化。但加上乘性 margin 之后单调区间被压缩到了 [0, $\frac{\pi}{m}$]，如果有某个样本落在这个区间外了，就很难进行优化；</p></li>
+<li><p>乘性 margin 把 cos 函数的单调区间压小了，导致优化困难。在 [0, π]这个区间内 cosine 函数都是单调的，只要落在这个区间内的任何一个位置，网络都会往减小的方向去优化。但加上乘性 margin 之后单调区间被压缩到了 [0, π/m]，如果有某个样本落在这个区间外了，就很难进行优化；</p></li>
 
 <li><p>乘性 margin 产生的 margin 是不均匀的，依赖于夹角，如果两个样本的夹角本来就小，那它产生的 margin 也会很小。换言之，乘性 margin 对于易混淆的 class 具有不可分性。</p></li>
 </ol>
@@ -240,7 +245,7 @@ $$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\th
 <img src="https://ws2.sinaimg.cn/large/a94403f0ly1g6llluh7ixj20dc03iwek.jpg" alt="Selection_013" />
 </center></p>
 
-<p>在 CosFace 中作者要求决策平面为 $cos(\theta_1)-m&gt;cos(\theta_2)$ 与 $cos(\theta_2)-m&gt;cos(\theta_1)$，因此就有了下面的这张对比图与公式：
+<p>在 CosFace 中作者要求决策平面为 $$cos(\theta_1)-m&gt;cos(\theta_2)$$ 与 $$cos(\theta_2)-m&gt;cos(\theta_1)$$因此就有了下面的这张对比图与公式：
 <center>
 <img src="https://wx1.sinaimg.cn/large/a94403f0ly1g6llt511grj20ls06bwf1.jpg" alt="Selection_014" />
 </center>
@@ -252,9 +257,9 @@ $$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\th
 <img src="https://ws4.sinaimg.cn/large/a94403f0ly1g6llzlgd4nj20hn07ddgt.jpg" alt="Selection_016" />
 </center></p>
 
-<p>图中左边的决策边界是 $cos(\theta_1)-cos(\theta_2)=0$ 而右边的决策边界是 $cos(\theta_1)-cos(\theta_2)=m$。<strong>图右中，若 $x$ 越接近 $W_1$，$cos(\theta_1)$ 的值会越大，反之 $cos(\theta_2)$ 的值会越小，所以它们的差值大于 $m$，意味着它越属于 1 类。而当 $x$ 属于 1 类，且落在中间空白区域的时候，它对应的 loss 值会越大，反传的梯度也大，所以从网络更新的角度来理解也是有道理的。</strong></p>
+<p>图中左边与右边的决策边界分别是 $$cos(\theta_1)-cos(\theta_2)=0$$ $$cos(\theta_1)-cos(\theta_2)=m$$<strong>图右中，若 x 越接近 W1，$$cos(\theta_1)$$ 值会越大，反之 $$cos(\theta_2)$$ 值会越小，所以它们的差值大于 m，意味着它越属于 1 类。而当 x 属于 1 类，且落在中间空白区域的时候，它对应的 loss 值会越大，反传的梯度也大，所以从网络更新的角度来理解也是有道理的。</strong></p>
 
-<p><strong>$cos(m\theta)$ 与 $cos(\theta)-m$ 这两个的区别实质上是角度距离与余弦距离的区别，最终的决策边界是与余弦相关的，所以用加性 margin 会比有乘性更有效果。</strong>
+<p><strong>$$cos(m\theta)$$ 与 $$cos(\theta)-m$$ 这两个的区别实质上是角度距离与余弦距离的区别，最终的决策边界是与余弦相关的，所以用加性 margin 会比有乘性更有效果。</strong>
 另外，CosFace 的论文中还指出，由于 scale 的大小过小会导致不收敛，所以给出了 lower bound of scale：
 <center>
 <img src="https://wx2.sinaimg.cn/large/a94403f0ly1g6lmcafpt5j20az034748.jpg" alt="Selection_017" />
@@ -262,7 +267,7 @@ $$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\th
 
 <p>其中 $C$ 与 $P_W$ 分别是类别数与最小的期望概率值，在训练中都是固定值。</p>
 
-<h4 id="⑥-arcface-cvpr-2019-https-arxiv-org-abs-1801-07698">⑥ <a href="https://arxiv.org/abs/1801.07698">ArcFace(CVPR 2019)</a></h4>
+<h4 id="big-⑥-arcface-cvpr-2019-https-arxiv-org-abs-1801-07698-big"><big> ⑥ <a href="https://arxiv.org/abs/1801.07698">ArcFace(CVPR 2019)</a></big></h4>
 
 <p>损失函数如下：
 <center>
@@ -407,6 +412,12 @@ $$||W_1||||x||cos(\theta_1)\geq||W_1||||x||cos(m\theta_1)&gt;||W_2||||x||cos(\th
     
 
     
+
+    
+      <script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
+    
   </body>
 </html>
+
+
 
